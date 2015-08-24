@@ -32,8 +32,8 @@ end
 
 -------------------------------------------
 --set get del exit
-function redis_test_1()
-	print("-------------redis_test_1-----------");
+function redis_key_1()
+	print("-------------redis_key_1-----------");
 	if dbRedis:setnx("myTestKey", "12121") == 1 then
 		print("set date:");
 	end
@@ -47,22 +47,58 @@ function redis_test_1()
 		dbRedis:del("myTestKey")
 	end
 	
-	dbRedis:set("myTestKey1", {"myData"});
-	local tdata = dbRedis:get("myTestKey1");
-	for k,v in pairs(tdata) do
-		print("--"..k)
-	end
-	
 	dbRedis:mset("fruit", "apple","drink", "beer", "food", "cookies")
-	
 	print(dbRedis:get("fruit"))
 	print(dbRedis:get("drink"))
 	print(dbRedis:get("food"))
+	print("-------key---------")
+	
+	local tb = dbRedis:keys("*");
+	for k, v in ipairs(tb) do
+		print(k.."-"..v)
+	end
 	
 	dbRedis:hmset("website", "google", "www.google.com", "yahoo", "www.yahoo.com")
 	print(dbRedis:hget("website", "yahoo"));
 	
 end
+
+function redis_list_2()
+	print("-------list-----------")
+	-- print(dbRedis:lpush("languages","C++"));
+	-- print(dbRedis:lpush("languages","python"));
+	-- print(dbRedis:lpush("languages","Java"));
+	
+	print(dbRedis:llen("languages"));
+	local listData = dbRedis:lrange("languages",0,2)
+	for k,v in ipairs(listData) do
+		print(v);
+	end
+	
+end
+
+function redis_set_3()
+	print("-------set-----------")
+	-- 给集合添加数据
+	dbRedis:sadd("bbs", "tianya.cn", "groups.google.com");
+	
+	-- 移除元素
+	print(dbRedis:srem("bbs", "groups.google.com"));
+	
+	-- 获取集合数据
+	local tbData = dbRedis:smembers("bbs")
+	for k,v in ipairs(tbData) do
+		print(k.."-"..v);
+	end
+		
+	-- 判断集合是否存在元素
+	if dbRedis:sismember("bbs", "tianya.cn") then
+		print("have node");
+	end
+	
+	
+end
+
 
 local function watching()
 	local w = redis.watch(conf)
@@ -88,8 +124,10 @@ skynet.start(function()
 		skynet.exit();
 	end
 
-	redis_test_1();
-
+	redis_key_1();
+	redis_list_2();
+	redis_set_3();
+	
 	skynet.dispatch("lua", function(session, address, cmd, ...)
 		local f = command[string.upper(cmd)]
 		if f then
