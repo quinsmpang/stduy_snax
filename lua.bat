@@ -1,0 +1,1 @@
+lua.exe examples/stduy_snax/client.lua
