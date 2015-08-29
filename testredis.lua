@@ -31,8 +31,71 @@ function command.REGISTERED(name, password)
 end
 
 -------------------------------------------
+
+--RedisÊı¾İĞòÁĞ»¯
+function serialize_1(t)
+	local mark={}
+	local assign={}
+	
+	local function ser_table(tbl,parent)
+		mark[tbl]=parent
+		local tmp={}
+		for k,v in pairs(tbl) do
+			local key= type(k)=="number" and "["..k.."]" or k
+			if type(v)=="table" then
+				local dotkey= parent..(type(k)=="number" and key or "."..key)
+				if mark[v] then
+					table.insert(assign,dotkey.."="..mark[v])
+				else
+					table.insert(tmp, key.."="..ser_table(v,dotkey))
+				end
+			else
+				table.insert(tmp, key.."="..v)
+			end
+		end
+		return "{"..table.concat(tmp,",").."}"
+	end
+	return "do local ret="..ser_table(t,"ret")..table.concat(assign," ").." return ret end"
+end
+
+function serialize_2(t)
+	local mark={}
+	local assign={}
+	
+	local function ser_table(tbl,parent)
+		mark[tbl]=parent
+		local tmp={}
+		for k,v in pairs(tbl) do
+			print("key:"..k)
+			local key= type(k)=="number" and "["..k.."]" or k
+			
+			if type(v)=="table" then
+				local dotkey= parent..(type(k)=="number" and key or "."..key)
+				if mark[v] then
+					table.insert(assign,dotkey.."="..mark[v])
+				else
+					table.insert(tmp, key.."="..ser_table(v,dotkey))
+				end
+			elseif type(v) == "string" then
+				table.insert(tmp, key.."=\""..v.."\"");
+			elseif type(v) == "number" then	
+				table.insert(tmp, key.."="..v)
+			else
+				if v then
+					table.insert(tmp, key.."=true")
+				else
+					table.insert(tmp, key.."=false")
+				end
+			end
+		end
+		return "{"..table.concat(tmp,",").."}"
+	end
+	return "do local ret="..ser_table(t,"ret")..table.concat(assign," ").." return ret end"
+end
+
 --set get del exit
 function redis_key_1()
+	--»ù±¾µÄKey²Ù×÷
 	print("-------------redis_key_1-----------");
 	if dbRedis:setnx("myTestKey", "12121") == 1 then
 		print("set date:");
@@ -64,6 +127,7 @@ function redis_key_1()
 end
 
 function redis_list_2()
+	--Á´±í²Ù×÷
 	print("-------list-----------")
 	-- print(dbRedis:lpush("languages","C++"));
 	-- print(dbRedis:lpush("languages","python"));
@@ -78,27 +142,69 @@ function redis_list_2()
 end
 
 function redis_set_3()
+	--¼¯ºÏ²Ù×÷
 	print("-------set-----------")
-	-- ç»™é›†åˆæ·»åŠ æ•°æ®
+	-- ¸ø¼¯ºÏÌí¼ÓÊı¾İ
 	dbRedis:sadd("bbs", "tianya.cn", "groups.google.com");
 	
-	-- ç§»é™¤å…ƒç´ 
+	-- ÒÆ³ıÔªËØ
 	print(dbRedis:srem("bbs", "groups.google.com"));
 	
-	-- è·å–é›†åˆæ•°æ®
+	-- »ñÈ¡¼¯ºÏÊı¾İ
 	local tbData = dbRedis:smembers("bbs")
 	for k,v in ipairs(tbData) do
 		print(k.."-"..v);
 	end
 		
-	-- åˆ¤æ–­é›†åˆæ˜¯å¦å­˜åœ¨å…ƒç´ 
+	-- ÅĞ¶Ï¼¯ºÏÊÇ·ñ´æÔÚÔªËØ
 	if dbRedis:sismember("bbs", "tianya.cn") then
 		print("have node");
 	end
-	
-	
 end
 
+function redis_ser()
+	local tb = {1,2,3,"hello", true};
+	--ĞòÁĞ»¯Lua±í
+	local tbData = serialize_2(tb);
+	print("ĞòÁĞ»¯:"..tbData)
+	dbRedis:set("ser", tbData);
+	local serStr = dbRedis:get("ser");
+	print(serStr);
+	--·´ĞòÁĞ»¯Lua±íÊı¾İ
+	print("------------------")
+	local tb = load(serStr)();
+	for k,v in pairs(tb) do
+		if type(v) == "boolean" then
+			print("key=---"..tostring(v));
+		end
+		print("key=",k,"  value=",v)
+	end
+	print("------------------")
+	
+	
+	local tb2 = {};
+	tb2["key1"] = 1;
+	tb2["key2"] = 2;
+	tb2["key3"] = "dsad";
+	tb2["key4"] = true;
+	--ĞòÁĞ»¯Lua±í
+	local tbData = serialize_2(tb2);
+	print("ĞòÁĞ»¯2:"..tbData)
+	dbRedis:set("ser2", tbData);
+	local serStr = dbRedis:get("ser2");
+	print(serStr);
+	--·´ĞòÁĞ»¯Lua±íÊı¾İ
+	print("------------------")
+	local tb = load(serStr)();
+	for k,v in pairs(tb) do
+		if type(v) == "boolean" then
+			print("key=---"..tostring(v));
+		end
+		print("key=",k,"  value=",v)
+	end
+	print("------------------")
+	
+end
 
 local function watching()
 	local w = redis.watch(conf)
@@ -109,8 +215,6 @@ local function watching()
 		print("Watch", w:message())
 	end
 end
-
-------------------------------------------
 
 --======================================--
 skynet.start(function()
@@ -127,7 +231,7 @@ skynet.start(function()
 	redis_key_1();
 	redis_list_2();
 	redis_set_3();
-	
+	redis_ser();
 	skynet.dispatch("lua", function(session, address, cmd, ...)
 		local f = command[string.upper(cmd)]
 		if f then
