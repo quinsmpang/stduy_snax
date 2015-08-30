@@ -15,50 +15,8 @@ local conf = {
 local dbRedis = nil;
 
 
-local command = {}
-function command.GET(key)
-	return db[key]
-end
-
-function command.SET(key, value)
-	local last = db[key]
-	db[key] = value
-	return last
-end
-
-function command.REGISTERED(name, password)
-	return "success"
-end
-
--------------------------------------------
-
 --Redis数据序列化
-function serialize_1(t)
-	local mark={}
-	local assign={}
-	
-	local function ser_table(tbl,parent)
-		mark[tbl]=parent
-		local tmp={}
-		for k,v in pairs(tbl) do
-			local key= type(k)=="number" and "["..k.."]" or k
-			if type(v)=="table" then
-				local dotkey= parent..(type(k)=="number" and key or "."..key)
-				if mark[v] then
-					table.insert(assign,dotkey.."="..mark[v])
-				else
-					table.insert(tmp, key.."="..ser_table(v,dotkey))
-				end
-			else
-				table.insert(tmp, key.."="..v)
-			end
-		end
-		return "{"..table.concat(tmp,",").."}"
-	end
-	return "do local ret="..ser_table(t,"ret")..table.concat(assign," ").." return ret end"
-end
-
-function serialize_2(t)
+function serialize(t)
 	local mark={}
 	local assign={}
 	
@@ -90,10 +48,62 @@ function serialize_2(t)
 		end
 		return "{"..table.concat(tmp,",").."}"
 	end
-	return "do local ret="..ser_table(t,"ret")..table.concat(assign," ").." return ret end"
+	-- return "do local ret="..ser_table(t,"ret")..table.concat(assign," ").." return ret end"
+	return ser_table(t,"ret")..table.concat(assign," ");
 end
 
---set get del exit
+--Redis数据反序列化
+function deserialization(str)
+	local serStr = "do local ret="..tostring(str).." return ret end"
+	local tb = load(serStr)();
+	return tb;
+end
+
+
+local command = {}
+
+-- 创建账号
+function command.CreateAccount(userName, passWord)
+	--判断账号用户名是否已经存在
+	print("Redis:CreateAccount", userName, passWord)
+	if userName ~= nil and userName ~= "" then
+		local strAccountKey = "Account:"..userName;
+		if not dbRedis:exists(strAccountKey) then
+			local entityID = dbRedis:incr("AccountIndex");
+			local tUserInfo = {entityID,userName, passWord};
+			local tStrInfo  = serialize(tUserInfo);
+			dbRedis:set(strAccountKey, tStrInfo)
+			return true;
+		-- else
+			-- local str = dbRedis:get(userName);
+			-- print(str);
+			-- local tUserInfo = deserialization(str);
+			-- print("EntityId", tUserInfo[1]);
+		end
+	end
+	return false;
+end
+
+
+
+-------------------------------------------
+--正式代码
+function redis_init()
+
+	if not dbRedis:exists("AccountIndex") then
+		--用户实体ID开始下标设定
+		dbRedis:set("AccountIndex", 1);
+	end
+	
+	
+	
+
+end
+
+-------------------------------------------
+
+
+--普通
 function redis_key_1()
 	--基本的Key操作
 	print("-------------redis_key_1-----------");
@@ -126,6 +136,7 @@ function redis_key_1()
 	
 end
 
+--列表
 function redis_list_2()
 	--链表操作
 	print("-------list-----------")
@@ -141,6 +152,7 @@ function redis_list_2()
 	
 end
 
+--redis集合
 function redis_set_3()
 	--集合操作
 	print("-------set-----------")
@@ -162,17 +174,19 @@ function redis_set_3()
 	end
 end
 
+--redis表序列化
 function redis_ser()
 	local tb = {1,2,3,"hello", true};
 	--序列化Lua表
-	local tbData = serialize_2(tb);
+	local tbData = serialize(tb);
 	print("序列化:"..tbData)
 	dbRedis:set("ser", tbData);
 	local serStr = dbRedis:get("ser");
 	print(serStr);
 	--反序列化Lua表数据
 	print("------------------")
-	local tb = load(serStr)();
+	-- local tb = load(serStr)();
+	local tb = deserialization(serStr)
 	for k,v in pairs(tb) do
 		if type(v) == "boolean" then
 			print("key=---"..tostring(v));
@@ -188,14 +202,15 @@ function redis_ser()
 	tb2["key3"] = "dsad";
 	tb2["key4"] = true;
 	--序列化Lua表
-	local tbData = serialize_2(tb2);
+	local tbData = serialize(tb2);
 	print("序列化2:"..tbData)
 	dbRedis:set("ser2", tbData);
 	local serStr = dbRedis:get("ser2");
 	print(serStr);
 	--反序列化Lua表数据
 	print("------------------")
-	local tb = load(serStr)();
+	-- local tb = load(serStr)();
+	local tb = deserialization(serStr)
 	for k,v in pairs(tb) do
 		if type(v) == "boolean" then
 			print("key=---"..tostring(v));
@@ -204,6 +219,55 @@ function redis_ser()
 	end
 	print("------------------")
 	
+end
+
+function redis_test()
+	local db = dbRedis
+	db:del "C"
+	db:set("B:2", "hello")
+	db:set("B:1", "world")
+	db:sadd("C", "one")
+
+	print(db:get("A"))
+	print(db:get("B"))
+
+	db:del "D"
+	for i=1,10 do
+		db:hset("D",i,i)
+	end
+	local r = db:hvals "D"
+	for k,v in pairs(r) do
+		print(k,v)
+	end
+
+	db:multi()
+	db:get "A"
+	db:get "B"
+	local t = db:exec()
+	for k,v in ipairs(t) do
+		print("Exec", v)
+	end
+
+	print(db:exists "A")
+	print(db:get "A")
+	print(db:set("A","hello world"))
+	print(db:get("A"))
+	print(db:sismember("C","one"))
+	print(db:sismember("C","two"))
+
+	print("===========publish============")
+
+	for i=1,10 do
+		db:publish("foo", i)
+	end
+	for i=11,20 do
+		db:publish("hello.foo", i)
+	end
+end
+
+--实体ID
+function redis_entityID()
+
 end
 
 local function watching()
@@ -219,7 +283,7 @@ end
 --======================================--
 skynet.start(function()
 	
-	skynet.fork(watching)
+	-- skynet.fork(watching)
 	dbRedis = redis.connect(conf);
 	if not dbRedis then
 		print("*******************************")
@@ -227,13 +291,18 @@ skynet.start(function()
 		print("*******************************")
 		skynet.exit();
 	end
-
+	redis_init();
+	
+	--[[
+	redis_test();
 	redis_key_1();
 	redis_list_2();
 	redis_set_3();
 	redis_ser();
+	redis_entityID();
+	--]]
 	skynet.dispatch("lua", function(session, address, cmd, ...)
-		local f = command[string.upper(cmd)]
+		local f = command[cmd]
 		if f then
 			skynet.ret(skynet.pack(f(...)))
 		else
@@ -242,51 +311,5 @@ skynet.start(function()
 	end)
 	skynet.register "MYREDISDB";
 	
-	--[[
-	if db then
-		db:del "C"
-		db:set("A", "hello")
-		db:set("B", "world")
-		db:sadd("C", "one")
-
-		print(db:get("A"))
-		print(db:get("B"))
-
-		db:del "D"
-		for i=1,10 do
-			db:hset("D",i,i)
-		end
-		local r = db:hvals "D"
-		for k,v in pairs(r) do
-			print(k,v)
-		end
-
-		db:multi()
-		db:get "A"
-		db:get "B"
-		local t = db:exec()
-		for k,v in ipairs(t) do
-			print("Exec", v)
-		end
-
-		print(db:exists "A")
-		print(db:get "A")
-		print(db:set("A","hello world"))
-		print(db:get("A"))
-		print(db:sismember("C","one"))
-		print(db:sismember("C","two"))
-
-		print("===========publish============")
-		for i=1,10 do
-			db:publish("foo", i)
-		end
-		for i=11,20 do
-			db:publish("hello.foo", i)
-		end
-		db:disconnect()
-	else
-		print("redis connect failed");
-	end
-	--]]
 end)
 

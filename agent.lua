@@ -35,12 +35,13 @@ function REQUEST:quit()
 	skynet.call(WATCHDOG, "lua", "close", client_fd)
 end
 
+---------------------------------------
 function REQUEST:registered()
-	print("registered")
-	-- return { result = "success" }
-	-- local r = skynet.call("SIMPLEDB", "lua", "registered", self.name, self.password)
-	local r = skynet.call("MYSQLITEDB", "lua", "registered", self.name, self.password)
-	return { success = "success",result = r}
+	local ret = skynet.call("MYREDISDB", "lua", "CreateAccount", self.username, self.password)
+	if ret then
+		return { code = 0 };
+	end
+	return { code = 1 };
 end
 
 local function request(name, args, response)

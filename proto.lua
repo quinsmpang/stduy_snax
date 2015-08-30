@@ -38,12 +38,11 @@ quit 4 {}
 
 registered 5 {
 	request {
-		name 0 : string
+		username 0 : string
 		password 1 : string
 	}
 	response {
-		success 0 : string
-		result 1 : string
+		code 0 : integer
 	}
 }
 
