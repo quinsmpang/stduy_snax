@@ -102,7 +102,6 @@ end
 
 -------------------------------------------
 
-
 --普通
 function redis_key_1()
 	--基本的Key操作
@@ -136,8 +135,13 @@ function redis_key_1()
 	
 end
 
+-- 哈希表
+function redis_hash_2()
+	
+end
+
 --列表
-function redis_list_2()
+function redis_list_3()
 	--链表操作
 	print("-------list-----------")
 	-- print(dbRedis:lpush("languages","C++"));
@@ -153,7 +157,7 @@ function redis_list_2()
 end
 
 --redis集合
-function redis_set_3()
+function redis_set_4()
 	--集合操作
 	print("-------set-----------")
 	-- 给集合添加数据
@@ -173,6 +177,27 @@ function redis_set_3()
 		print("have node");
 	end
 end
+
+--redis有序集合
+function redis_sortset_5()
+	--集合操作
+	print("-------sortset-----------")
+	-- 给集合添加数据
+	print(dbRedis:zadd("page_rank", 9 ,"baidu.com", 8,"bing.com"));
+	
+	--给某个Key值添加分值
+	print(dbRedis:zincrby("page_rank", 100 ,"bing.com"));
+	
+	--获取某个Key的分值
+	print(dbRedis:zscore("page_rank", "bing.com"));
+	
+	-- 给集合删除数据
+	print(dbRedis:zrem("page_rank", "baidu.com"));
+	
+	
+end
+
+
 
 --redis表序列化
 function redis_ser()
@@ -292,7 +317,7 @@ skynet.start(function()
 		skynet.exit();
 	end
 	redis_init();
-	
+	redis_key_1();
 	--[[
 	redis_test();
 	redis_key_1();

@@ -102,6 +102,12 @@ local function dispatch_package()
 	end
 end
 
+local tb = {}
+for i = 1,4 do
+	table.insert(tb, i);
+end
+print(table.unpack(tb))
+
 -- send_request("handshake")
 -- send_request("set", { what = "hello", value = "world" })
 send_request("registered", { username = "ccmfeng1", password = "chenglijie" })
