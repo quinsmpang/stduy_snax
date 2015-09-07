@@ -7,6 +7,7 @@ local netpack = require "netpack"
 local socket = require "socket"
 local sproto = require "sproto"
 local sprotoloader = require "sprotoloader"
+local redis = require "redis"
 
 local WATCHDOG
 local host
@@ -15,6 +16,8 @@ local send_request
 local CMD = {}
 local REQUEST = {}
 local client_fd
+local watch
+local usernameinfo
 
 function REQUEST:get()
 	print("get", self.what)
@@ -36,8 +39,22 @@ function REQUEST:quit()
 end
 
 ---------------------------------------
-function REQUEST:registered()
+
+--账号创建
+function REQUEST:CreateAccount()
+	usernameinfo = self.username;
+	
 	local ret = skynet.call("MYREDISDB", "lua", "CreateAccount", self.username, self.password)
+	if ret then
+		return { code = 0 };
+	end
+	return { code = 1 };
+end
+
+--推送Redis消息
+function REQUEST:PublishRedis()
+	print("PublishRedis login:",usernameinfo);
+	local ret = skynet.call("MYREDISDB", "lua", "PublishRedis", self.channel, self.strinfo)
 	if ret then
 		return { code = 0 };
 	end
@@ -87,10 +104,20 @@ function CMD.start(conf)
 	-- slot 1,2 set at main.lua
 	host = sprotoloader.load(1):host "package"
 	send_request = host:attach(sprotoloader.load(2))
+	
+	--订阅redis消息
+	watch = redis.watch({host = "127.0.0.1" ,port = 6379 ,db = 0})
+	watch:psubscribe("chat");
+	
 	skynet.fork(function()
 		while true do
-			send_package(send_request "heartbeat")
-			skynet.sleep(500)
+			-- send_package(send_request "heartbeat")
+			-- skynet.sleep(500)
+			
+			local data = watch:message();
+			print("Watch", skynet.self(), data, "\n")
+			local retData = send_request("ReturnPublish", {strinfo = data})
+			send_package(retData);
 		end
 	end)
 

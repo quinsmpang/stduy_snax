@@ -24,7 +24,7 @@ function serialize(t)
 		mark[tbl]=parent
 		local tmp={}
 		for k,v in pairs(tbl) do
-			print("key:"..k)
+			-- print("key:"..k)
 			local key= type(k)=="number" and "["..k.."]" or k
 			
 			if type(v)=="table" then
@@ -65,7 +65,7 @@ local command = {}
 -- 创建账号
 function command.CreateAccount(userName, passWord)
 	--判断账号用户名是否已经存在
-	print("Redis:CreateAccount", userName, passWord)
+	-- print("Redis:CreateAccount", userName, passWord)
 	if userName ~= nil and userName ~= "" then
 		local strAccountKey = "Account:"..userName;
 		if not dbRedis:exists(strAccountKey) then
@@ -73,6 +73,7 @@ function command.CreateAccount(userName, passWord)
 			local tUserInfo = {entityID,userName, passWord};
 			local tStrInfo  = serialize(tUserInfo);
 			dbRedis:set(strAccountKey, tStrInfo)
+			-- dbRedis:hmset("website", "google", "www.google.com", "yahoo", "www.yahoo.com")
 			return true;
 		-- else
 			-- local str = dbRedis:get(userName);
@@ -84,7 +85,16 @@ function command.CreateAccount(userName, passWord)
 	return false;
 end
 
-
+-- 创建账号
+function command.PublishRedis(channel, strinfo)
+	--判断账号用户名是否已经存在
+	-- print("Redis:PublishRedis", channel, strinfo)
+	if channel ~= nil and strinfo ~= nil then
+		dbRedis:publish(channel, strinfo);
+		return true;
+	end
+	return false;
+end
 
 -------------------------------------------
 --正式代码
@@ -317,7 +327,7 @@ skynet.start(function()
 		skynet.exit();
 	end
 	redis_init();
-	redis_key_1();
+	-- redis_key_1();
 	--[[
 	redis_test();
 	redis_key_1();

@@ -110,12 +110,14 @@ print(table.unpack(tb))
 
 -- send_request("handshake")
 -- send_request("set", { what = "hello", value = "world" })
-send_request("registered", { username = "ccmfeng1", password = "chenglijie" })
+send_request("CreateAccount", { username = "ccmfeng2", password = "chenglijie" })
+send_request("PublishRedis", { channel = "chat", strinfo = "lixichen" })
+
 while true do
 	dispatch_package()
 	local cmd = socket.readstdin()
 	if cmd then
-		send_request("registered", { name = "ccmfeng", password = "chenglijie" })
+		send_request("CreateAccount", { name = "ccmfeng", password = "chenglijie" })
 		if cmd == "quit" then
 			send_request("quit")
 		else

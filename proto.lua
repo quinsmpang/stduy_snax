@@ -36,10 +36,20 @@ set 3 {
 
 quit 4 {}
 
-registered 5 {
+CreateAccount 5 {
 	request {
 		username 0 : string
 		password 1 : string
+	}
+	response {
+		code 0 : integer
+	}
+}
+
+PublishRedis 6 {
+	request {
+		channel 0 : string
+		strinfo 1 : string
 	}
 	response {
 		code 0 : integer
@@ -55,6 +65,14 @@ proto.s2c = sprotoparser.parse [[
 }
 
 heartbeat 1 {}
+
+ReturnPublish 2 {
+	request {
+		strinfo 0 : string
+	}
+}
+
+
 ]]
 
 return proto

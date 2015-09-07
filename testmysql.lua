@@ -93,7 +93,7 @@ skynet.start(function()
 		port=3306,
 		database="skynet",
 		user="root",
-		password="chenlijie",
+		password="123456",
 		max_packet_size = 1024 * 1024
 	}
 	if not sqldb then
