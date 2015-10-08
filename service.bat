@@ -1,1 +1,1 @@
-skynet.exe skyService/config.stduy_snax
+skynet.exe stduy_snax/config.stduy_snax

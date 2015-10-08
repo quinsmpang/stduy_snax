@@ -1,1 +1,1 @@
-lua.exe ./skyService/client.lua
+lua.exe ./stduy_snax/client.lua

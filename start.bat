@@ -1,1 +1,0 @@
-skynet.exe examples/config.stduy_snax
