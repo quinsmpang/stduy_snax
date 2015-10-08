@@ -9,8 +9,9 @@ local string = string
 local mode = ...
 
 if mode == "agent" then
-
+print("not agent 2")
 local function response(id, ...)
+	skynet.error("----------");
 	local ok, err = httpd.write_response(sockethelper.writefunc(id), ...)
 	if not ok then
 		-- if err == sockethelper.socket_error , that means socket closed.
@@ -23,6 +24,19 @@ skynet.start(function()
 		socket.start(id)
 		-- limit request body size to 8192 (you can pass nil to unlimit)
 		local code, url, method, header, body = httpd.read_request(sockethelper.readfunc(id), 8192)
+		skynet.error("***********");
+		skynet.error(code)
+		skynet.error(url)
+		skynet.error(method)
+		skynet.error(header)
+		skynet.error("------------")
+		for k, v in pairs(header) do
+			local str = "key="..tostring(k).." value="..tostring(v)
+			skynet.error(str);
+		end
+		skynet.error("------------")
+		skynet.error(body);
+		skynet.error("***********");
 		if code then
 			if code ~= 200 then
 				response(id, code)
@@ -58,6 +72,8 @@ skynet.start(function()
 end)
 
 else
+
+print("not agent 1")
 
 skynet.start(function()
 	local agent = {}
