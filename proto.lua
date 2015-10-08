@@ -46,7 +46,18 @@ CreateAccount 5 {
 	}
 }
 
-PublishRedis 6 {
+UserLogin 6 {
+	request {
+		username 0 : string
+		password 1 : string
+	}
+	response {
+		code 0 : integer
+	}
+}
+
+
+PublishRedis 7 {
 	request {
 		channel 0 : string
 		strinfo 1 : string

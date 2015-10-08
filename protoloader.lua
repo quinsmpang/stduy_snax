@@ -2,7 +2,7 @@ print("--------------------------");
 print("---------protoloader------");
 print("--------------------------");
 -- module proto as examples/proto.lua
-package.path = "./examples/stduy_snax/?.lua;" .. package.path
+package.path = "./skyService/?.lua;" .. package.path
 
 local skynet = require "skynet"
 local sprotoparser = require "sprotoparser"

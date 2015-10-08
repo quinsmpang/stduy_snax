@@ -39,7 +39,6 @@ function REQUEST:quit()
 end
 
 ---------------------------------------
-
 --账号创建
 function REQUEST:CreateAccount()
 	usernameinfo = self.username;
@@ -49,6 +48,11 @@ function REQUEST:CreateAccount()
 		return { code = 0 };
 	end
 	return { code = 1 };
+end
+
+--账号登陆
+function REQUEST:UserLogin()
+
 end
 
 --推送Redis消息
@@ -115,7 +119,7 @@ function CMD.start(conf)
 			-- skynet.sleep(500)
 			
 			local data = watch:message();
-			print("Watch", skynet.self(), data, "\n")
+			skynet.error("Watch", skynet.self(), data)
 			local retData = send_request("ReturnPublish", {strinfo = data})
 			send_package(retData);
 		end
