@@ -1,3 +1,7 @@
+
+-- 游戏选服列表服务
+-- 一个Http服务,用于选服列表
+
 local skynet = require "skynet"
 local socket = require "socket"
 local httpd = require "http.httpd"
