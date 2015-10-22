@@ -1,10 +1,13 @@
-print("-------------------------------");
-print("----------data_redis-----------");
-print("-------------------------------");
+
 
 local skynet = require "skynet"
 local redis = require "redis"
 require "skynet.manager"	-- import skynet.register
+
+skynet.error("-------------------------------");
+skynet.error("----------data_redis-----------");
+skynet.error("-------------------------------");
+
 
 local conf = {
 	host = "127.0.0.1" ,

@@ -1,13 +1,16 @@
-print("--------------------------");
-print("---------protoloader------");
-print("--------------------------");
+
+
 -- module proto as examples/proto.lua
-package.path = "./stduy_snax/?.lua;" .. package.path
+package.path = "./stduy_snax/AgreementCenter/?.lua;" .. package.path
 
 local skynet = require "skynet"
 local sprotoparser = require "sprotoparser"
 local sprotoloader = require "sprotoloader"
 local proto = require "proto"
+
+skynet.error("---------------------------------");
+skynet.error("---------协议预加载中心----------");
+skynet.error("---------------------------------");
 
 skynet.start(function()
 	sprotoloader.save(proto.c2s, 1)

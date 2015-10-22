@@ -8,24 +8,27 @@ local socket = require "socket"
 local string = string
 
 --是否开启限制Http选服服务个数
-local isOpenLimitAgent = true
+local isOpenLimitAgent = false
 local limitAgentNum = 20;
+
 
 skynet.start(function()
 	
 	local balance = 1
-	local serviceAgent = {};
-	
+	local serviceAgent = {};	
 	if isOpenLimitAgent then
 		for i= 1, limitAgentNum do
 			serviceAgent[i] = skynet.newservice("serviceAgent");
 		end
 	end
-
-	skynet.error("监听游戏Http:8001端口")
+	
+	skynet.error("-----------------------------")
+	skynet.error("----监听游戏Http:8001端口----")
+	
 	local id = socket.listen("0.0.0.0", 8001)
 	socket.start(id , function(id, addr)
-
+		
+		
 		if isOpenLimitAgent then
 			skynet.error(string.format("%s connected, pass it to serviceAgent :%08x", addr, serviceAgent[balance]))
 			skynet.send(serviceAgent[balance], "lua", id, false);
@@ -35,6 +38,7 @@ skynet.start(function()
 			end
 		else
 			local Agent = skynet.newservice("serviceAgent");
+			skynet.error(string.format("%s connected, pass it to serviceAgent :%08x", addr, Agent))
 			skynet.send(Agent, "lua", id, true);
 		end
 	end)

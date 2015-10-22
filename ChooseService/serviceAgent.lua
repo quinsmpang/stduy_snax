@@ -21,11 +21,42 @@ local function response(id, ...)
 	end
 end
 
+local function getServiceList()
+
+	skynet.error("---------getServiceList-----------");
+	local strService = "";
+	local outIndex = 0;
+	local r = skynet.call("MYSQLITEDB", "lua", "getOneTable", "ServiceList")
+	for k,v in pairs(r) do
+
+		local intIndex = 0;
+		local newService = "";
+		for key,value in pairs(v) do
+			if intIndex == 0 then
+				newService = tostring(key).."="..tostring(value);
+			else
+				newService = newService..","..tostring(key).."="..tostring(value);
+			end
+			intIndex = intIndex + 1;
+		end
+		if outIndex == 0 then
+			strService = newService;
+		else
+			strService = strService.."\n"..newService;
+		end
+		outIndex = outIndex + 1;
+	end
+	
+	return strService;
+end
+
+
 skynet.start(function()
 	skynet.dispatch("lua", function (_,_,id)
 		socket.start(id)
 		-- limit request body size to 8192 (you can pass nil to unlimit)
 		local code, url, method, header, body = httpd.read_request(sockethelper.readfunc(id), 8192)
+		--[[
 		skynet.error("***********");
 		skynet.error(code)
 		skynet.error(url)
@@ -39,10 +70,12 @@ skynet.start(function()
 		skynet.error("------------")
 		skynet.error(body);
 		skynet.error("***********");
+		--]]
 		if code then
 			if code ~= 200 then
 				response(id, code)
 			else
+				--[[
 				local tmp = {}
 				if header.host then
 					table.insert(tmp, string.format("host: %s", header.host))
@@ -60,7 +93,9 @@ skynet.start(function()
 					table.insert(tmp, string.format("%s = %s",k,v))
 				end
 				table.insert(tmp, "-----body----\n" .. body)
-				response(id, code, table.concat(tmp,"\n"))
+				--]]
+				-- response(id, code, table.concat(tmp,"\n"))
+				response(id, code, getServiceList())
 			end
 		else
 			if url == sockethelper.socket_error then

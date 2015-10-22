@@ -1,6 +1,4 @@
-print("--------------------------");
-print("-----------agent----------");
-print("--------------------------");
+
 
 local skynet = require "skynet"
 local netpack = require "netpack"
@@ -8,6 +6,11 @@ local socket = require "socket"
 local sproto = require "sproto"
 local sprotoloader = require "sprotoloader"
 local redis = require "redis"
+
+skynet.error("-----------------------------------");
+skynet.error("-----------消息分发中心------------");
+skynet.error("-----------------------------------");
+
 
 local WATCHDOG
 local host

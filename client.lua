@@ -3,7 +3,7 @@ print("---------client-----------");
 print("--------------------------");
 
 package.cpath = "luaclib/?.so"
-package.path = "lualib/?.lua;skyService/?.lua"
+package.path = "lualib/?.lua;stduy_snax/AgreementCenter/?.lua"
 
 if _VERSION ~= "Lua 5.3" then
 	error "Use lua 5.3"
@@ -102,30 +102,20 @@ local function dispatch_package()
 	end
 end
 
-local tb = {}
-for i = 1,4 do
-	table.insert(tb, i);
-end
-print(table.unpack(tb))
 
--- send_request("handshake")
+send_request("handshake")
 -- send_request("set", { what = "hello", value = "world" })
-send_request("CreateAccount", { username = "ccmfeng2", password = "chenglijie" })
-send_request("PublishRedis", { channel = "chat", strinfo = "lixichen" })
+-- send_request("CreateAccount", { username = "ccmfeng2", password = "chenglijie" })
+-- send_request("PublishRedis", { channel = "chat", strinfo = "lixichen" })
 
 while true do
 	dispatch_package()
 	local cmd = socket.readstdin()
 	if cmd then
-		send_request("CreateAccount", { name = "ccmfeng", password = "chenglijie" })
 		if cmd == "quit" then
 			send_request("quit")
-		else
-			send_request("get", { what = cmd })
 		end
 	else
-		
-		socket.usleep(10000)
-		
+		socket.usleep(100000)
 	end
 end

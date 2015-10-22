@@ -1,11 +1,13 @@
 --
-print("-------------------------------");
-print("----------data_mysql-----------");
-print("-------------------------------");
+
 
 local skynet = require "skynet"
 local mysql = require "mysql"
 require "skynet.manager"	-- import skynet.register
+
+skynet.error("-------------------------------");
+skynet.error("----------data_mysql-----------");
+skynet.error("-------------------------------");
 
 local sqldb = nil;
 
@@ -58,11 +60,25 @@ function command.GET(key)
 	return db[key]
 end
 
+--获取整张表 
+function command.GETONETABLE(tableName)
+
+	skynet.error("---------GETONETABLE---------");
+	local sqlEx = string.format("SELECT * FROM %s", tableName);
+	local res = sqldb:query(sqlEx)
+	-- print(dump(res))
+	return res;
+	
+end
+
 function command.SET(key, value)
 	local last = db[key]
 	db[key] = value
 	return last
 end
+
+
+
 
 function command.REGISTERED(name, password)
 	print("db.name",name)
@@ -94,13 +110,13 @@ skynet.start(function()
 		port=3306,
 		database="skynet",
 		user="root",
-		password="123456",
+		password="chenlijie",
 		max_packet_size = 1024 * 1024
 	}
 	if not sqldb then
-		print("*******************************")
-		print("*********SQL Connet Fail*******")
-		print("*******************************")
+		skynet.error("*******************************")
+		skynet.error("*********SQL Connet Fail*******")
+		skynet.error("*******************************")
 		skynet.exit();
 	end
 	
@@ -114,48 +130,7 @@ skynet.start(function()
 	end)
 	skynet.register "MYSQLITEDB";
 	
-	
-	-- print("testmysql success to connect to mysql server")
-
-	-- db:query("set names utf8")
-
-	-- local res = db:query("drop table if exists cats")
-	-- res = db:query("create table cats ".."(id serial primary key, ".. "name varchar(5))")
-	-- print( dump( res ) )
-
-	-- res = db:query("insert into cats (name) ".. "values (\'Bob\'),(\'\'),(null)")
-	-- print ( dump( res ) )
-
-	-- res = db:query("select * from cats order by id asc")
-	-- print ( dump( res ) )
-
-    -- test in another coroutine
-	-- skynet.fork( test2, db)
-    -- skynet.fork( test3, db)
-	-- multiresultset test
-	-- res = db:query("select * from cats order by id asc ; select * from cats")
-	-- print ("multiresultset test result=", dump( res ) )
-
-	-- print ("escape string test result=", mysql.quote_sql_str([[\mysql escape %string test'test"]]) )
-
-	-- bad sql statement
-	-- local res =  db:query("select * from notexisttable" )
-	-- print( "bad query test result=" ,dump(res) )
-
-    -- local i=1
-    -- while true do
-        -- local    res = db:query("select * from cats order by id asc")
-        -- print ( "test1 loop times=" ,i,"\n","query result=",dump( res ) )
-
-        -- res = db:query("select * from cats order by id asc")
-        -- print ( "test1 loop times=" ,i,"\n","query result=",dump( res ) )
-
-
-        -- skynet.sleep(1000)
-        -- i=i+1
-    -- end
-
 	--db:disconnect()
-	--skynet.exit()
+	-- skynet.exit()
 end)
 

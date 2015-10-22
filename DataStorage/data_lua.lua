@@ -1,9 +1,11 @@
-print("--------------------------");
-print("----------lua db----------");
-print("--------------------------");
+
 
 local skynet = require "skynet"
 require "skynet.manager"	-- import skynet.register
+
+skynet.error("--------------------------");
+skynet.error("----------lua db----------");
+skynet.error("--------------------------");
 
 --数据存储
 local lua_db = {}

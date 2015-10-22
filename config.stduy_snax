@@ -23,6 +23,7 @@ standalone = "0.0.0.0:2013"
 luaservice = root.."service/?.lua;"..root.."stduy_snax/?.lua;"
 luaservice = luaservice..root.."stduy_snax/DataStorage/?.lua;"
 luaservice = luaservice..root.."stduy_snax/ChooseService/?.lua;"
+luaservice = luaservice..root.."stduy_snax/AgreementCenter/?.lua;"
 
 -- 未知
 lualoader = "lualib/loader.lua"

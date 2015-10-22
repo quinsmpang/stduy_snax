@@ -1,12 +1,14 @@
 --[[
 所有网络连接都会被这个脚本监听
 --]]
-print("--------------------------");
-print("---------watchdog---------");
-print("--------------------------");
+
 
 local skynet = require "skynet"
 local netpack = require "netpack"
+
+skynet.error("----------------------------------");
+skynet.error("---------网络连接监听中心---------");
+skynet.error("----------------------------------");
 
 local CMD = {}
 local SOCKET = {}

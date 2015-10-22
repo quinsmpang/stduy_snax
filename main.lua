@@ -1,14 +1,17 @@
-print("--------------------------");
-print("----------mian------------");
-print("--------------------------");
+
 
 local skynet = require "skynet"
 local sprotoloader = require "sprotoloader"
 
+
+skynet.error("------------------------------");
+skynet.error("----------游戏入口------------");
+skynet.error("------------------------------");
+
 local max_client = 64
 
 skynet.start(function()
-	print("Server start")
+	skynet.error("---------Server start---------")
 	
 	skynet.uniqueservice("protoloader")
 	-- local console = skynet.newservice("console")
@@ -20,7 +23,7 @@ skynet.start(function()
 	--数据存储服务
 	skynet.newservice("data_lua");
 	skynet.newservice("data_redis");
-	-- skynet.newservice("data_mysql")
+	skynet.newservice("data_mysql")
 	
 	local watchdog = skynet.newservice("watchdog")
 	skynet.call(watchdog, "lua", "start", {
@@ -28,7 +31,7 @@ skynet.start(function()
 		maxclient = max_client,
 		nodelay = true,
 	})
-	print("Watchdog listen on ", 8888)
+	skynet.error("Watchdog listen on ", 8888)
 
 	skynet.exit()
 end)

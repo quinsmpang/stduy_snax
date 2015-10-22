@@ -1,6 +1,8 @@
-print("--------------------------");
-print("---------proto------------");
-print("--------------------------");
+local skynet = require "skynet"
+
+skynet.error("---------------------------------");
+skynet.error("---------协议定义中心------------");
+skynet.error("---------------------------------");
 
 local sprotoparser = require "sprotoparser"
 
@@ -18,25 +20,9 @@ handshake 1 {
 	}
 }
 
-get 2 {
-	request {
-		what 0 : string
-	}
-	response {
-		result 0 : string
-	}
-}
+quit 2 {}
 
-set 3 {
-	request {
-		what 0 : string
-		value 1 : string
-	}
-}
-
-quit 4 {}
-
-CreateAccount 5 {
+CreateAccount 3 {
 	request {
 		username 0 : string
 		password 1 : string
@@ -46,7 +32,7 @@ CreateAccount 5 {
 	}
 }
 
-UserLogin 6 {
+UserLogin 4 {
 	request {
 		username 0 : string
 		password 1 : string
@@ -56,8 +42,7 @@ UserLogin 6 {
 	}
 }
 
-
-PublishRedis 7 {
+PublishRedis 5 {
 	request {
 		channel 0 : string
 		strinfo 1 : string
