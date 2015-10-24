@@ -20,6 +20,9 @@ skynet.start(function()
 	--游戏Http选服列表服务
 	skynet.newservice("gameService");
 	
+	--聊天
+	skynet.newservice("chatRoom");
+	
 	--数据存储服务
 	skynet.newservice("data_lua");
 	skynet.newservice("data_redis");

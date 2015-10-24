@@ -6,6 +6,8 @@ local socket = require "socket"
 local sproto = require "sproto"
 local sprotoloader = require "sprotoloader"
 local redis = require "redis"
+local profile = require "profile"
+local mc = require "multicast"
 
 skynet.error("-----------------------------------");
 skynet.error("-----------消息分发中心------------");
@@ -21,27 +23,60 @@ local REQUEST = {}
 local client_fd
 local watch
 local usernameinfo
+local c2
 
-function REQUEST:get()
+function send_package(pack)
+	local package = string.pack(">s2", pack)
+	socket.write(client_fd, package)
+end
+
+
+function REQUEST.get()
 	print("get", self.what)
 	local r = skynet.call("SIMPLEDB", "lua", "get", self.what)
 	return { result = r }
 end
 
-function REQUEST:set()
+function REQUEST.set()
 	print("set", self.what, self.value)
 	local r = skynet.call("SIMPLEDB", "lua", "set", self.what, self.value)
 end
 
 function REQUEST:handshake()
+	REQUEST:EnterWordRoom();
 	return { msg = "Welcome to skynet, I will send heartbeat every 5 sec." }
 end
 
-function REQUEST:quit()
-	skynet.call(WATCHDOG, "lua", "close", client_fd)
+function REQUEST.quit()
+	-- skynet.call(WATCHDOG, "lua", "close", client_fd)
+	c2:publish("test")
+end
+
+function woldRoomMsg(str)
+	skynet.error("woldRoomMsg "..tostring(str));
+	local str = tostring(skynet:self())..tostring("woldRoomMsg");
+	local retData = send_request("ReturnPublish", {strinfo = str})
+	send_package(retData);
 end
 
 ---------------------------------------
+function REQUEST.EnterWordRoom()
+	print("agent EnterWordRoom")
+	local roomInfo = skynet.call("CHATROOM", "lua", "enterRoom", "WorldRoom")
+	
+	--
+	c2 = mc.new {
+		channel = roomInfo.channelId,  -- 绑定上一个频道
+		-- dispatch = function (channel, source, ...) return,  -- 设置这个频道的消息处理函数
+		dispatch = woldRoomMsg;
+	}
+	--]]
+	c2:subscribe();
+	c2:publish("test")
+end
+
+
+
 --账号创建
 function REQUEST:CreateAccount()
 	usernameinfo = self.username;
@@ -68,18 +103,25 @@ function REQUEST:PublishRedis()
 	return { code = 1 };
 end
 
-local function request(name, args, response)
-	local f = assert(REQUEST[name])
+local function message_dispatch(name, args, response)
+	
+	-- profile.resume()
+	profile.start()
+	
+
+	local f = assert(REQUEST[name])	
 	local r = f(args)
 	if response then
-		return response(r)
+		local ret =  response(r);
+		local times = profile.stop()
+		skynet.error(string.format("end, pass it to serviceAgent :%s", times))
+		return ret;
+	else
+		local times = profile.stop()
+		skynet.error(string.format("end, pass it to serviceAgent :%s", times))
 	end
 end
 
-local function send_package(pack)
-	local package = string.pack(">s2", pack)
-	socket.write(client_fd, package)
-end
 
 skynet.register_protocol {
 	name = "client",
@@ -89,7 +131,7 @@ skynet.register_protocol {
 	end,
 	dispatch = function (_, _, type, ...)
 		if type == "REQUEST" then
-			local ok, result  = pcall(request, ...)
+			local ok, result  = pcall(message_dispatch, ...)
 			if ok then
 				if result then
 					send_package(result)

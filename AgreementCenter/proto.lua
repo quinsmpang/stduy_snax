@@ -1,8 +1,8 @@
-local skynet = require "skynet"
+-- local skynet = require "skynet"
 
-skynet.error("---------------------------------");
-skynet.error("---------协议定义中心------------");
-skynet.error("---------------------------------");
+-- skynet.error("---------------------------------");
+-- skynet.error("---------协议定义中心------------");
+-- skynet.error("---------------------------------");
 
 local sprotoparser = require "sprotoparser"
 
@@ -51,6 +51,8 @@ PublishRedis 5 {
 		code 0 : integer
 	}
 }
+
+EnterWordRoom 6 {}
 
 ]]
 

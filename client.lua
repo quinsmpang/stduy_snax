@@ -108,12 +108,16 @@ send_request("handshake")
 -- send_request("CreateAccount", { username = "ccmfeng2", password = "chenglijie" })
 -- send_request("PublishRedis", { channel = "chat", strinfo = "lixichen" })
 
+local args = nil;
+
 while true do
 	dispatch_package()
 	local cmd = socket.readstdin()
 	if cmd then
 		if cmd == "quit" then
 			send_request("quit")
+		else
+			print("not found com");
 		end
 	else
 		socket.usleep(100000)

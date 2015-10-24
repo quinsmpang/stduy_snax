@@ -14,11 +14,18 @@ local CMD = {}
 local SOCKET = {}
 local gate
 local agent = {}
+local nowClient = 0;
 
 function SOCKET.open(fd, addr)
+
 	skynet.error("New client from : " .. addr)
+	
 	agent[fd] = skynet.newservice("agent")
 	skynet.call(agent[fd], "lua", "start", { gate = gate, client = fd, watchdog = skynet.self() })
+	
+	nowClient = nowClient + 1;
+	skynet.error("nowClient : " .. nowClient)
+	
 end
 
 local function close_agent(fd)
@@ -34,6 +41,8 @@ end
 function SOCKET.close(fd)
 	print("socket close",fd)
 	close_agent(fd)
+	nowClient = nowClient - 1;
+	skynet.error("nowClient : " .. nowClient)
 end
 
 function SOCKET.error(fd, msg)

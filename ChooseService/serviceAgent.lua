@@ -9,8 +9,7 @@ local sockethelper = require "http.sockethelper"
 local urllib = require "http.url"
 local table = table
 local string = string
-
-
+local profile = require "profile"
 
 local function response(id, ...)
 	skynet.error("----------");
@@ -22,7 +21,6 @@ local function response(id, ...)
 end
 
 local function getServiceList()
-
 	skynet.error("---------getServiceList-----------");
 	local strService = "";
 	local outIndex = 0;
@@ -46,7 +44,6 @@ local function getServiceList()
 		end
 		outIndex = outIndex + 1;
 	end
-	
 	return strService;
 end
 

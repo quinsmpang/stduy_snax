@@ -4,7 +4,7 @@
 
 local skynet = require "skynet"
 local socket = require "socket"
-
+local profile = require "profile"
 local string = string
 
 --是否开启限制Http选服服务个数
@@ -22,8 +22,11 @@ skynet.start(function()
 		end
 	end
 	
+	profile.start()
 	skynet.error("-----------------------------")
 	skynet.error("----监听游戏Http:8001端口----")
+	local times = profile.stop()
+	skynet.error("----监听游戏Http:8001端口----",times)
 	
 	local id = socket.listen("0.0.0.0", 8001)
 	socket.start(id , function(id, addr)
