@@ -30,6 +30,16 @@ function send_package(pack)
 	socket.write(client_fd, package)
 end
 
+local function timeCallFuc(nTime)
+	
+	if nTime > 0 then
+		skynet.timeout(3*100, function()
+			c2:publish("test:"..tostring(nTime))
+			timeCallFuc(nTime-1);
+		end)
+	end
+end
+
 
 function REQUEST.get()
 	print("get", self.what)
@@ -49,13 +59,13 @@ end
 
 function REQUEST.quit()
 	-- skynet.call(WATCHDOG, "lua", "close", client_fd)
-	c2:publish("test")
+	timeCallFuc(3)
 end
 
-function woldRoomMsg(str)
-	skynet.error("woldRoomMsg "..tostring(str));
-	local str = tostring(skynet:self())..tostring("woldRoomMsg");
-	local retData = send_request("ReturnPublish", {strinfo = str})
+function woldRoomMsg(str1, str2, str3)
+	-- skynet.error("---woldRoomMsg:"..tostring(str1).."_"..tostring(str2).."_"..tostring(str3));
+	local str = tostring(skynet:self());
+	local retData = send_request("ReturnPublish", {strinfo = str3})
 	send_package(retData);
 end
 

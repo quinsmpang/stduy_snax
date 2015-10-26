@@ -13,6 +13,8 @@ local command = {}
 --房间存储器
 local roomList = {};
 
+
+
 function command.enterRoom(roomName)
 	
 	
@@ -31,8 +33,10 @@ function command.enterRoom(roomName)
 		--]]
 		roomInfo = {name = roomName, channelId = channel.channel}
 		roomList[tostring(roomName)] = roomInfo;
+		
 	end
 	
+
 	return roomInfo;
 	
 end
